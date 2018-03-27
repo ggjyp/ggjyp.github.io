@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="Overview 开始阅读Semtech公司关于LoRa设计的官方文档```oraLowEnergyDesign```对于文档中关键的知识点，在此进行记录，方便日后学习1234567891011121314152. 观看视频[LoRa crash course by Thomas Telkamp](https://www.youtube.com/watch?v=T3dGLqZrjIQ)&amp;lt; !">
+<meta property="og:type" content="article">
+<meta property="og:title" content="阅读翻译：LoraDesignGuide">
+<meta property="og:url" content="http://yoursite.com/2018/03/27/阅读翻译：LoraDesignGuide/index.html">
+<meta property="og:site_name" content="三月三对半">
+<meta property="og:description" content="Overview 开始阅读Semtech公司关于LoRa设计的官方文档```oraLowEnergyDesign```对于文档中关键的知识点，在此进行记录，方便日后学习1234567891011121314152. 观看视频[LoRa crash course by Thomas Telkamp](https://www.youtube.com/watch?v=T3dGLqZrjIQ)&amp;lt; !">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-03-27T03:36:55.519Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="阅读翻译：LoraDesignGuide">
+<meta name="twitter:description" content="Overview 开始阅读Semtech公司关于LoRa设计的官方文档```oraLowEnergyDesign```对于文档中关键的知识点，在此进行记录，方便日后学习1234567891011121314152. 观看视频[LoRa crash course by Thomas Telkamp](https://www.youtube.com/watch?v=T3dGLqZrjIQ)&amp;lt; !">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/03/27/阅读翻译：LoraDesignGuide/"/>
+
+
+
+
+
+  <title>阅读翻译：LoraDesignGuide | 三月三对半</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">三月三对半</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/27/阅读翻译：LoraDesignGuide/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Rick Jiang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="三月三对半">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">阅读翻译：LoraDesignGuide</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-27T11:33:51+08:00">
+                2018-03-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h2><ol>
+<li>开始阅读Semtech公司关于LoRa设计的官方文档<figure class="highlight plain"><figcaption><span>```oraLowEnergyDesign```对于文档中关键的知识点，在此进行记录，方便日后学习</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">2. 观看视频[LoRa crash course by Thomas Telkamp](https://www.youtube.com/watch?v=T3dGLqZrjIQ)</span><br><span class="line">&lt; !--more--&gt; </span><br><span class="line"></span><br><span class="line">## LoraDesignGuide</span><br><span class="line">### LoRa设计的原则</span><br><span class="line">#### LoRa调制</span><br><span class="line">LoRa is a spread spectrum modulation scheme that uses wideband linear frequency modulated pulses whose frequency increases or decreases over a certain amount of time to encode information.</span><br><span class="line"></span><br><span class="line">LoRa是一种使用宽带线性调频脉冲的扩频调制方案，它的频率可以在一定的时间内增加或减少以此来进行信息编码</span><br><span class="line"></span><br><span class="line">#### 接收灵敏度</span><br><span class="line">The sensitivity of a radio receiver at room temperature is given by:</span><br><span class="line"></span><br><span class="line">```math</span><br><span class="line">S = -174 + 10*log10BW + NF + SNR  （公式一）</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>这是计算室温条件下，接收器灵敏度的计算公式，其中:</p>
+<ul>
+<li>-174：带宽1hz的热噪声，只能通过改变室温而改变</li>
+<li>BW：接收器的带宽</li>
+<li>NF: NF是接收器的噪声系数，每个硬件都有对应固定的噪声系数</li>
+<li>SNR：SNR表示下层调制方案所要求的信噪比。LoRa设计人员可以将信噪比和带宽作为设计变量。</li>
+</ul>
+<h4 id="信噪比和扩频因子"><a href="#信噪比和扩频因子" class="headerlink" title="信噪比和扩频因子"></a>信噪比和扩频因子</h4><p>扩频的基本前提是每一位信息都被编码为多个码片。LoRa调制的位和码片速率(bit and chip rate)之间的关系为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line">Rc= 2^SF*Rb</span><br><span class="line">```math</span><br><span class="line"></span><br><span class="line">其中SF是扩频因子(spreading factor)</span><br><span class="line"></span><br><span class="line">SNR是可以解调的所需信号功率与噪声的最小比率。 LoRa调制本身，前向纠错（FEC）技术和扩频处理增益的性能相结合，可以显着提高SNR。 常规和LoRa调制格式的一些SNR示例如下表所示。 这个数字越低，接收机就越灵敏。 负数表示在接收机本底噪声下接收信号功率的能力：</span><br><span class="line"></span><br><span class="line">***各种调制配置的SNR***</span><br><span class="line"></span><br><span class="line">Modulation| Typical SNR</span><br><span class="line">---|---</span><br><span class="line">LoRa SF12 | -20 dB</span><br><span class="line">LoRa SF10 | -15 dB</span><br><span class="line">GMSK|9 dB</span><br><span class="line"></span><br><span class="line">将一个bit替换为多个信息码片意味着扩频因子对LoRa分组的持续时间有直接的影响。 下表展示出了在250kHz的固定带宽情况下，扩频因子对空中灵敏度和时间的影响。</span><br><span class="line"></span><br><span class="line">扩频因子对Time on Air和灵敏度的影响(CR=2, BW=250)</span><br><span class="line"></span><br><span class="line">扩频因子 | 空中时间 [ms] | 灵敏度 [dBm]</span><br><span class="line">---|---|-</span><br><span class="line">12 | 528.4|-134</span><br><span class="line">10 |132.1 |-129</span><br><span class="line">8  |39.2  |-124</span><br><span class="line"></span><br><span class="line">#### 带宽和码率</span><br><span class="line">设计者在选择扩频因子时必须管理的原理设计折衷之一是空中时延（包持续时间）与占用带宽的关系。 由多个芯片表示单个比特，意味着芯片必须比原始比特率更快地发送 - 增加了信号的占用带宽，或者在相同的带宽中 - 增加了传输信息所花费的时间。</span><br><span class="line"></span><br><span class="line">LoRa调制以每秒十亿赫兹的码片速率以等于编程带宽的码片速率发送扩展数据流。 所以125kHz的LoRa带宽对应于125kcps的码片速率。</span><br><span class="line"></span><br><span class="line">公式1表明，由于信道中附加噪声功率的集成，带宽（BW）的增加将使接收器不敏感。 这意味着对于给定的扩频因子，设计者可以选择使用窄带宽，最大化灵敏度，但增加空中时间，或者增加带宽以提高传输速度，但降低灵敏度。</span><br><span class="line"></span><br><span class="line">对于一个固定的扩频因子，带宽对结果的空中时间和灵敏度的影响如图所示</span><br><span class="line">下表为一个10字节的有效载荷数据包：</span><br><span class="line"></span><br><span class="line">***带宽对空中时间(time on air)和灵敏度的影响(CR=2, SF=10)***</span><br><span class="line"></span><br><span class="line">带宽 | Time on air [ms] | 灵敏度 [dBm]</span><br><span class="line">---|---|---</span><br><span class="line">125| 264.2|-132</span><br><span class="line">250| 132.1|-129</span><br><span class="line">500|66|-126</span><br><span class="line"></span><br><span class="line">考察带宽和扩频因子的基本设计标准，可以快速评估LoRa对于给定应用的适用性。 但是，为了优化设计性能，还需要考虑其他设计标准。</span><br><span class="line"></span><br><span class="line">### 3.高级LORA设计参数</span><br><span class="line">除了使用扩频因子和带宽之外，还有设计者在实施LoRa无线链路时必须考虑的其他设计变量。 这些在优化LoRa传输的干扰和空中时间的鲁棒性方面是特别重要的</span><br><span class="line"></span><br><span class="line">#### 3.1前向纠错</span><br><span class="line">LoRa调制解调器还采用前向纠错（FEC）的形式，允许恢复由于干扰而导致的信息位。 这需要在传送的分组中额外编码数据的小开销。根据选择的编码速率，在下面的曲线族中显示了仅存在热噪声时获得的附加鲁棒性</span><br><span class="line"></span><br><span class="line">然而，FEC的实际性能收益是在存在突发干扰的情况下。如果无线电链路可能受到这种干扰，则应评估使用FEC。 下表显示了在SF = 10时，编码速率的增加如何影响固定带宽250 kHz的空中时间。</span><br><span class="line"></span><br><span class="line">***CR（编码率）对空中时间的影响（SF = 10，BW = 250 kHz）***</span><br><span class="line"></span><br><span class="line">CR| Time on air [ms]</span><br><span class="line">---|---</span><br><span class="line">1 | 123.9</span><br><span class="line">2 | 132.1</span><br><span class="line">4 | 148.5</span><br><span class="line"></span><br><span class="line">#### 3.2 硬件实现</span><br><span class="line">接收机的RF（射频）连接方式会进一步影响接收机的灵敏度，报头模式会影响空中的时间。 报头模式的效果在第4节中讨论。</span><br><span class="line"></span><br><span class="line">SX1272 / 3/3/6/7/8具有两个接收器输入连接，RFI配置。 下图显示了这两种配置。 通过使用单独的RF和Tx路径，使用单独的天线或单个天线操作的RF开关，可以实现最佳灵敏度性能（通过降低等式2的噪声系数NF）。</span><br><span class="line"></span><br><span class="line">#### 3.3 低数据速率优化模式和报头模式</span><br><span class="line">影响数据包空中时间的最后两个因素是连接到调制解调器的调制解调器和数据包设置的两种操作模式。 为了理解它们的影响，有必要检查LoRa数据包的格式。</span><br><span class="line"></span><br><span class="line">### 4.LoRa数据包格式和空中时间</span><br><span class="line">为了有效管理空中和接收机灵敏度的监管和系统级设计时间约束，因此有必要能够计算给定调制解调器配置的空中时间。 精确的公式如下。</span><br><span class="line"></span><br><span class="line">为了计算空中的时间，定义符号持续时间是很方便的，Tsym。 这是以芯片速率发送2^SF个芯片所需的时间，回想一下带宽定义芯片速率，它由下式给出：</span><br><span class="line"></span><br><span class="line">```math</span><br><span class="line">Tsym = 2^SF/BW</span><br><span class="line">```math</span><br><span class="line"></span><br><span class="line">数据包包含多个元素，如下图所示。</span><br><span class="line"></span><br><span class="line">[图片]</span><br><span class="line"></span><br><span class="line">所有调制解调器配置都是一系列前导码，其持续时间由下式给出：</span><br><span class="line"></span><br><span class="line">Tpreamble = (Npreamble +4.25)Tsym</span><br><span class="line"></span><br><span class="line">其中Npreamble是编程的前导码符号的数量。组成数据包有效载荷和标题的符号数由下式给出：</span><br><span class="line"></span><br><span class="line">payloadSymbNb = 8 + max(ceil(8PL-4SF+28+16-20H/4(SF-2DE))(CR+40),0)</span><br><span class="line"></span><br><span class="line">具有以下依赖关系：</span><br><span class="line">- PL是payload的字节数</span><br><span class="line">- SF是扩频因子</span><br><span class="line">- 当header启用时(报头模式)H=0,当不使用报头模式时H=1</span><br><span class="line">- 低数据速率优化启用时DE = 1，禁用时DE = 0</span><br><span class="line">- CR是从1到4的编码率</span><br><span class="line"></span><br><span class="line">因此，如果在空气中的时间要求减少，同时数据包长度是事先已知的，那么可以移除报头信息。有效载荷持续时间是符号周期乘以有效载荷符号的数目。</span><br><span class="line"></span><br><span class="line">```math</span><br><span class="line">Tpayload = payloadSymbNb*Tsym</span><br></pre></td></tr></table></figure>
+<p>空中时间(time on air)或数据包持续时间(packet duration)就是前导码持续时间和有效负载持续时间的总和：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Tpacket = Tpreamble +Tpayload</span><br></pre></td></tr></table></figure></p>
+<p>在这里我们可以看到，在窄带制度下，LoRa数据包可以有相当长的持续时间。 为了避免由于温度变化或运动而引起的晶体参考振荡器漂移的问题，使用低数据速率优化位。 特别是对于125kHz带宽和SF = 11和12，这增加了小的开销，以增加在LoRa分组的时间尺度上对参考频率变化的鲁棒性</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/27/IDEA中好用的快捷键/" rel="next" title="IDEA中好用的快捷键">
+                <i class="fa fa-chevron-left"></i> IDEA中好用的快捷键
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="Rick Jiang" />
+          <p class="site-author-name" itemprop="name">Rick Jiang</p>
+           
+              <p class="site-description motion-element" itemprop="description">水到渠成</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Overview"><span class="nav-number">1.</span> <span class="nav-text">Overview</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#信噪比和扩频因子"><span class="nav-number">1.0.1.</span> <span class="nav-text">信噪比和扩频因子</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Rick Jiang</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

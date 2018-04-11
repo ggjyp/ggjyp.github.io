@@ -353,49 +353,17 @@
 
       
         
-          
-            <p>在微服务的趋势下，数据库也开始容器化了。在容器中运行数据库与在物理机中运行数据库基本上没有太大的差别，但是在一些细节上还是有值得注意的地方。</p>
+          <p>在微服务的趋势下，数据库也开始容器化了。在容器中运行数据库与在物理机中运行数据库基本上没有太大的差别，但是在一些细节上还是有值得注意的地方。</p>
 <p>实习公司的项目中是使用MongoDB作为数据库的，Mongo也作为一个service放在docker-compose的配置文件里面了</p>
 <p>由于是商业项目，因此权限认证很重要，之前公司采用的是使用两个mongo service，一个作为实例一直运行，一个只运行一次，功能是给mongo实例添加授权信息。</p>
-<p>这样的实现方式虽然能做到自动授权，但是实现方式有点不够优雅。那么如何改进呢？</p>
-<h3 id="实验目标"><a href="#实验目标" class="headerlink" title="实验目标"></a>实验目标</h3><ul>
-<li>使用docker-compose创建MongoDB数据库容器</li>
-<li>启用权限认证，给MongoDB创建管理员用户和普通用户</li>
-</ul>
-<h3 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h3><p>使用官方镜像即可完成创建MongoDB环境，但启用权限认证还需要进行少量的操作</p>
-<p><strong>目标：自动化</strong></p>
-<p>看了很多授权的教程，大多数教程中的授权方法，都是先创建启动MongoDB容器，再通过<br><code>docker exec -it mongodb /bin/bash</code><br>进入容器再在容器内添加用户信息</p>
-<p>这样做虽然能达到目标，但是有两个缺点：</p>
-<ul>
-<li>操作繁琐</li>
-<li>配置信息不分离</li>
-</ul>
-<p>我希望：</p>
-<ul>
-<li>只要执行一次<code>docker-compose up</code>指令，就能完成整个MongoDB数据库环境的部署</li>
-<li>MongoDB数据库的用户信息是来自于我们的配置文件</li>
-</ul>
-<p>通过官方文档和stackoverflow的高赞回答中，我找到并改进了回答中的操作方式，实现了我想要的效果。接下来讲解一下过程</p>
-<h3 id="docker-entrypoint-initdb-d"><a href="#docker-entrypoint-initdb-d" class="headerlink" title="docker-entrypoint-initdb.d"></a>docker-entrypoint-initdb.d</h3><p>在<a href="https://stackoverflow.com/a/42917632/6049107" target="_blank" rel="noopener">How to create a DB for MongoDB container on start up?</a>问题中，@Matt说到官方镜像提供了一个路径用来给我们部署自定义的shell脚本和js脚本，这些脚本只会在数据库初始化的时候被执行一次，因此非常适合用来进行权限配置。</p>
-<p><em>值得注意的是：js脚本会默认会被作用在test数据库中，除非你设置了环境变量MONGO_INITDB_DATABASE</em></p>
-<h3 id="两种方案"><a href="#两种方案" class="headerlink" title="两种方案"></a>两种方案</h3><p>现在我们可以使用shell脚本来js脚本来执行数据库初始化的操作</p>
-<h4 id="shell脚本"><a href="#shell脚本" class="headerlink" title="shell脚本"></a>shell脚本</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"># compse.yml文件示例</span><br><span class="line"></span><br><span class="line">db:</span><br><span class="line">    image: mongo:3.4</span><br><span class="line">    environment:</span><br><span class="line">      - MONGO_INITDB_ROOT_USERNAME=root</span><br><span class="line">      - MONGO_INITDB_ROOT_PASSWORD=rootPass</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;17070:27017&quot;</span><br><span class="line">    volumes:</span><br><span class="line">      - ../deploy/mongoconfig/:/docker-entrypoint-initdb.d/</span><br><span class="line">    command: mongod</span><br></pre></td></tr></table></figure>
-<p>以上代码创建了一个mongdb实例，并创建了一个root权限的账号root，密码为rootPass</p>
-<p>shell脚本存放在<code>../deploy/mongoconfig/</code>路径下，并映射到<code>/docker-entrypoint-initdb.d/</code>路径中，这样就会在数据库初始化时执行shell脚本</p>
-<p><strong>sh类型</strong>的初始化脚本示例如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env bash</span><br><span class="line">echo &quot;Creating mongo users...&quot;</span><br><span class="line">mongo admin --host localhost -u root -p rootPass --eval &quot;db.createUser(&#123;user: &apos;admin&apos;, pwd: &apos;zonePassWord&apos;, roles: [&#123;role: &apos;userAdminAnyDatabase&apos;, db: &apos;admin&apos;&#125;]&#125;);&quot;</span><br><span class="line">mongo admin -u root -p rootPass &lt;&lt; EOF</span><br><span class="line">use zonedb</span><br><span class="line">db.createUser(&#123;user: &apos;zone&apos;, pwd: &apos;zonePass&apos;, roles:[&#123;role:&apos;readWrite&apos;,db:&apos;zonedb&apos;&#125;]&#125;)</span><br><span class="line">EOF</span><br><span class="line">echo &quot;Mongo users created.&quot;</span><br></pre></td></tr></table></figure></p>
-<p>这种方法已经可以实现创建数据库示例并创建用户的功能了，我们创建了MongoDB数据库，并创建了两个角色:admin和zone</p>
-<p>这种方法的<strong>缺点</strong>是不方便配置，用户信息被存放在<code>.sh</code>脚本中</p>
-<p>如果将用户信息剥离出来形成配置文件，那么基于该脚本的配置文件读取又比较难读取<br><em>（我不会shell,试了几下发现在各种单引号双引号包围下，想要使用配置文件的变量很困难）</em></p>
-<p>因此我放弃了使用shell脚本的方案</p>
-<h4 id="js脚本"><a href="#js脚本" class="headerlink" title="js脚本"></a>js脚本</h4><p>同样，使用<strong>js脚本</strong>进行初始化操作，只需要把js脚本放在指定的路径下，再将该路径通过Volumes映射到<code>/docker-entrypoint-initdb.d/</code>路径去就可以使用了</p>
-<p><strong>init_db.js</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">load(&quot;/配置文件路径/config.js&quot;)  //</span><br><span class="line"></span><br><span class="line">function createAdmin() &#123;</span><br><span class="line">    payload = &#123;</span><br><span class="line">      user: config.admin.user,</span><br><span class="line">      pwd: config.admin.pwd,</span><br><span class="line">      roles: [</span><br><span class="line">        &#123;</span><br><span class="line">          role: &quot;userAdminAnyDatabase&quot;,</span><br><span class="line">          db: &quot;admin&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;;</span><br><span class="line">    user = db.getUser(config.admin.user)</span><br><span class="line">    if (user) &#123;</span><br><span class="line">        db.dropUser(config.admin.user)</span><br><span class="line">    &#125;</span><br><span class="line">    db.createUser(payload);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function createNormalUser() &#123;</span><br><span class="line">    payload = &#123;</span><br><span class="line">      user: config.writer.user,</span><br><span class="line">      pwd: config.writer.pwd,</span><br><span class="line">      roles: [</span><br><span class="line">        &#123;</span><br><span class="line">          role: &quot;readWriteAnyDatabase&quot;,</span><br><span class="line">          db: &quot;admin&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;;</span><br><span class="line">    user = db.getUser(config.writer.user);</span><br><span class="line">    if (user) &#123;</span><br><span class="line">        db.dropUser(config.writer.user)</span><br><span class="line">    &#125;</span><br><span class="line">    db.createUser(payload);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">createAdmin()</span><br><span class="line">createNormalUser()</span><br></pre></td></tr></table></figure></p>
-<p><strong>config.js</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">var config = &#123;</span><br><span class="line">  admin: &#123;user: &quot;adm&quot;, pwd: &quot;123456&quot;&#125;,</span><br><span class="line">  writer: &#123;user: &quot;test&quot;, pwd: &quot;123456&quot;&#125;,</span><br><span class="line">  host: &quot;localhost&quot;,</span><br><span class="line">  port: 17070 //自定义的mongodb端口号</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这里我们在<code>test</code>数据库中创建了具有<code>userAdminAnyDatabase</code>的用户<code>adm</code>和<code>readWriteAnyDatabase</code>的用户<code>test</code></p>
-<p>如果我们想在其他数据库中创建这两个用户，因为我们使用的是<strong>js脚本</strong>那么我们就应该在<code>docker-compose.yml</code>中添加环境变量<code>MONGO_INITDB_DATABAS</code>否则，js脚本将会执行在<code>test</code>数据库。例如我想给<code>admin</code>目录添加这两个角色，那么我的<code>docker-compose.yml</code>就应该是这样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">db:</span><br><span class="line">    image: mongo:3.4</span><br><span class="line">    environment:</span><br><span class="line">      - MONGO_INITDB_ROOT_USERNAME=root</span><br><span class="line">      - MONGO_INITDB_ROOT_PASSWORD=rootPass</span><br><span class="line">      - MONGO_INITDB_DATABASE=admin</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;17070:27017&quot;</span><br><span class="line">    volumes:</span><br><span class="line">      - ../deploy/mongoconfig/:/docker-entrypoint-initdb.d/</span><br><span class="line">    command: mongod</span><br></pre></td></tr></table></figure></p>
-<p>当实际上，环境变量<code>environment</code>中的<code>MONGO_INITDB_ROOT_USERNAME</code>和<code>MONGO_INITDB_ROOT_PASSWORD</code>是可选的，即ROOT用户是可选的</p>
-<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>不知道是不是我们的部署方案有问题，或者我搜索方式有问题。MongDB这么火的数据库，结合docker-compose的案例却那么少。这里我认为使用js脚本来做MongDB的初始化应该是比较舒服的一种做法了。</p>
-
-          
+<p>这样的实现方式虽然能做到自动授权，但是实现方式有点不够优雅。那么如何改进呢？<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/04/10/利用docker-compose创建带授权的MongoDB容器/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>

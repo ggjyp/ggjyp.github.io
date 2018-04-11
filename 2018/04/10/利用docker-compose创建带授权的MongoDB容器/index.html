@@ -101,7 +101,7 @@
 <meta property="og:site_name" content="三月三对半">
 <meta property="og:description" content="在微服务的趋势下，数据库也开始容器化了。在容器中运行数据库与在物理机中运行数据库基本上没有太大的差别，但是在一些细节上还是有值得注意的地方。 实习公司的项目中是使用MongoDB作为数据库的，Mongo也作为一个service放在docker-compose的配置文件里面了 由于是商业项目，因此权限认证很重要，之前公司采用的是使用两个mongo service，一个作为实例一直运行，一个只运行一次">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-04-10T15:33:35.678Z">
+<meta property="og:updated_time" content="2018-04-10T15:35:32.573Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="利用docker-compose创建带授权的MongoDB容器">
 <meta name="twitter:description" content="在微服务的趋势下，数据库也开始容器化了。在容器中运行数据库与在物理机中运行数据库基本上没有太大的差别，但是在一些细节上还是有值得注意的地方。 实习公司的项目中是使用MongoDB作为数据库的，Mongo也作为一个service放在docker-compose的配置文件里面了 由于是商业项目，因此权限认证很重要，之前公司采用的是使用两个mongo service，一个作为实例一直运行，一个只运行一次">
@@ -352,7 +352,7 @@
         <p>在微服务的趋势下，数据库也开始容器化了。在容器中运行数据库与在物理机中运行数据库基本上没有太大的差别，但是在一些细节上还是有值得注意的地方。</p>
 <p>实习公司的项目中是使用MongoDB作为数据库的，Mongo也作为一个service放在docker-compose的配置文件里面了</p>
 <p>由于是商业项目，因此权限认证很重要，之前公司采用的是使用两个mongo service，一个作为实例一直运行，一个只运行一次，功能是给mongo实例添加授权信息。</p>
-<p>这样的实现方式虽然能做到自动授权，但是实现方式有点不够优雅。那么如何改进呢？</p>
+<p>这样的实现方式虽然能做到自动授权，但是实现方式有点不够优雅。那么如何改进呢？<br><a id="more"></a></p>
 <h3 id="实验目标"><a href="#实验目标" class="headerlink" title="实验目标"></a>实验目标</h3><ul>
 <li>使用docker-compose创建MongoDB数据库容器</li>
 <li>启用权限认证，给MongoDB创建管理员用户和普通用户</li>
